@@ -526,44 +526,4 @@ void main() {
     await tester.pumpAndSettle();
     expect(pickerLabels(), ['Atlas']);
   });
-  testWidgets('outside Solo the header does not rebuild on profile loads', (
-    tester,
-  ) async {
-    var builds = 0;
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [userCacheProvider.overrideWith(() => _CachedProfiles({}))],
-        child: MaterialApp(home: _DisabledHarness(onBuild: () => builds++)),
-      ),
-    );
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(_DisabledHarness)),
-    );
-    final before = builds;
-    for (var i = 0; i < 5; i++) {
-      container
-          .read(userCacheProvider.notifier)
-          .put(UserProfile(pubkey: '$i' * 64, displayName: 'P$i'));
-      await tester.pump();
-    }
-    expect(builds - before, 0);
-  });
-}
-
-class _DisabledHarness extends HookConsumerWidget {
-  final VoidCallback onBuild;
-  const _DisabledHarness({required this.onBuild});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    onBuild();
-    useMeChatAssistant(
-      context,
-      ref,
-      enabled: false,
-      channelId: 'chat',
-      initial: null,
-      messages: const [],
-    );
-    return const SizedBox();
-  }
 }

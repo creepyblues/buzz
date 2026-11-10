@@ -12,12 +12,17 @@ final meWorkingAgentsProvider = Provider.autoDispose
     .family<List<String>, String>((ref, channelId) {
       final agents = ref.watch(meAssistantsProvider).value ?? [];
       if (agents.isEmpty) return const [];
+      final typing = ref.watch(channelTypingProvider(channelId));
+      final active = typing.map((entry) => entry.pubkey.toLowerCase()).toSet();
+      // Name sources change with every profile load; watch them only while an
+      // agent is working.
+      if (!agents.any((agent) => active.contains(agent.pubkey.toLowerCase()))) {
+        return const [];
+      }
       final names = meAssistantNames(
         ref.watch(identityNameSourcesProvider),
         agents,
       );
-      final typing = ref.watch(channelTypingProvider(channelId));
-      final active = typing.map((entry) => entry.pubkey.toLowerCase()).toSet();
       return [
         for (final agent in agents)
           if (active.contains(agent.pubkey.toLowerCase()))

@@ -98,16 +98,17 @@ useMeChatAssistant(
             ref.read(userCacheProvider.notifier).get(selected)
       : null;
   // The owner's inventory name outranks the agent's self-published profile.
-  final names = watchMeAssistantNames(ref, agents);
+  // Only Solo offers agents; other chats must not watch every profile change.
+  final names = agents.isEmpty ? null : watchMeAssistantNames(ref, agents);
   final name = agents.any((agent) => agent.pubkey == selected)
-      ? names.labelFor(selected!)
+      ? names!.labelFor(selected!)
       : profile?.displayName;
   final avatarInitial = name?.trim().isNotEmpty == true
       ? name!.trim()[0].toUpperCase()
       : profile?.initial ?? '?';
   String agentName(String pubkey) {
     final candidates = [
-      agents.any((a) => a.pubkey == pubkey) ? names.labelFor(pubkey) : null,
+      agents.any((a) => a.pubkey == pubkey) ? names!.labelFor(pubkey) : null,
       ref.read(userCacheProvider)[pubkey]?.displayName,
     ];
     return candidates
